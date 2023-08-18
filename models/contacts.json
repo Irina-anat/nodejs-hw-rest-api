@@ -1,17 +1,5 @@
 [
   {
-    "id": "Z5sbDlS7pCzNsnAHLtDJd",
-    "name": "Reuben Henry",
-    "email": "pharetra.ut@dictum.co.uk",
-    "phone": "(715) 598-5792"
-  },
-  {
-    "id": "C9sjBfCo4UJCWjzBnOtxl",
-    "name": "Simon Morton",
-    "email": "dui.Fusce.diam@Donec.com",
-    "phone": "(233) 738-2360"
-  },
-  {
     "id": "e6ywwRe4jcqxXfCZOj_1e",
     "name": "Thomas Lucas",
     "email": "nec@Nulla.com",
@@ -28,11 +16,5 @@
     "name": "Grey Cat",
     "email": "green@ukr.net",
     "phone": "(992) 914-3794"
-  },
-  {
-    "id": "3QbKz4yViuOxSjpAEhEKy",
-    "name": "Smart Cat",
-    "email": "cat@ukr.com",
-    "phone": "98888"
-  }  
+  }
 ]
