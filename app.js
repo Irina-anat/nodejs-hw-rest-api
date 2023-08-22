@@ -1,8 +1,11 @@
 const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
+const dotenv = require('dotenv');
 
 const contactsRouter = require('./routes/api/contacts');
+
+dotenv.config(); // додає секретні файли для змінних оточень з env 
 
 const app = express();
 
