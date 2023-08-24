@@ -31,9 +31,7 @@ const addSchema = Joi.object({
     .required()
     .messages({ "any.required": `missing required name field` }),
   email: Joi.string()
-    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
-    .required()
-    .messages({ "any.required": `missing required email field` }),
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
   phone: Joi.string()
     .min(5)
     .required()
