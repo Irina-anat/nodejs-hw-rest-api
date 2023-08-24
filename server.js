@@ -8,6 +8,7 @@ const { DB_HOST, PORT = 3000 } = process.env; // змінні оточення
  mongoose.connect(DB_HOST)
   .then(() => {
     app.listen(PORT)
+    console.log("Data base connect successful");
   })
   .catch(error => {
     console.log(error.message);
