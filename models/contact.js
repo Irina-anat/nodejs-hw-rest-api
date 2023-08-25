@@ -20,7 +20,8 @@ const contactShema = new Schema(
       default: false,
     },
   },
-  { versionKey: false, timestamps: true });// щоб запис дата створ і онов
+  { versionKey: false, timestamps: true }
+);// щоб запис дата створ і онов
 
 contactShema.post("save", handleMongooseError);// помилка з вірним статусом 400
 const Contact = model("contact", contactShema);
@@ -31,7 +32,9 @@ const addSchema = Joi.object({
     .required()
     .messages({ "any.required": `missing required name field` }),
   email: Joi.string()
-    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+    .required()
+    .messages({ "any.required": `missing required email field` }),
   phone: Joi.string()
     .min(5)
     .required()
@@ -55,3 +58,5 @@ module.exports = {
   Contact,
   schemas
 };
+
+
