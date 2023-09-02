@@ -3,8 +3,14 @@ const { Contact } = require("../models/contact");
 const { HttpError, ctrlWrapper } = require("../helpers");
 
 
-const getAllContacts = async (_, res) => {
-    const result = await Contact.find({}, "-createdAt -updatedAt");
+const getAllContacts = async (req, res) => {
+  const { _id: owner } = req.user;
+  // console.log(req.query) { page: '1', 'limit ': '20' }
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+
+    const result = await Contact.find({owner}, "-createdAt -updatedAt",{ skip,
+    limit,}).populate("owner", "email");
     res.json(result); 
 };
 
@@ -18,7 +24,10 @@ const getAllContacts = async (_, res) => {
 }; 
 
 const addContact = async (req, res) => {
-  const result = await Contact.create(req.body);
+  // кожен контакт за окремим user
+  // console.log(req.user)
+  const { _id: owner } = req.user;
+  const result = await Contact.create({ ...req.body, owner });
   res.status(201).json(result);
 };
 
@@ -29,18 +38,19 @@ const updateContactById = async (req, res) => {
     if (!result) {
       throw HttpError(404, "Not Found");
     }
-    res.json(result);
+    res.status(201).json(result);
 };
 
 const updateFavourite = async (req, res) => {
   const { contactId } = req.params;
+  if (!req.body) throw HttpError(400, "missing field favorite");
   const result = await Contact.findByIdAndUpdate(contactId, req.body, {
     new: true,
   });
   if (!result) {
     throw HttpError(404, "Not Found");
   }
-  res.json(result);
+  res.status(201).json(result);
 };
 
  const deleteContactById = async (req, res) => {
