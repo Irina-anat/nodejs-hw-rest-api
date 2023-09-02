@@ -5,6 +5,8 @@ const app = require('./app');
 // const { DB_HOST } = require("./config");
 const { DB_HOST, PORT = 3000 } = process.env; // змінні оточення
 
+
+
  mongoose.connect(DB_HOST)
   .then(() => {
     app.listen(PORT)
