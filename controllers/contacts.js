@@ -5,9 +5,12 @@ const { HttpError, ctrlWrapper } = require("../helpers");
 
 const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user;
+  // const searchParams = {owner};
   // console.log(req.query) { page: '1', 'limit ': '20' }
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 20} = req.query;
   const skip = (page - 1) * limit;
+
+  // typeof favorite === "undefined" ? delete searchParams.favorite : searchParams.favorite = favorite;
 
     const result = await Contact.find({owner}, "-createdAt -updatedAt",{ skip,
     limit,}).populate("owner", "email");

@@ -15,8 +15,9 @@ const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+// якщо прийде запит за файлом(аватар) - брати з папки static
+app.use(express.static("public"));
 
-// app.use('/api/users', authRouter)
 app.use('/users', authRouter)
 app.use('/api/contacts', contactsRouter)
 
