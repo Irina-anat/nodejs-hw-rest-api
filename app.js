@@ -3,20 +3,23 @@ const logger = require('morgan');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+const authRouter = require('./routes/api/users');
 const contactsRouter = require('./routes/api/contacts');
 
 dotenv.config(); // додає секретні файли для змінних оточень з env 
 
 const app = express();
 
-
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+// якщо прийде запит за файлом(аватар) - брати з папки static
+app.use(express.static("public"));
 
-app.use('/api/contacts', contactsRouter);
+app.use('/users', authRouter)
+app.use('/api/contacts', contactsRouter)
 
 app.use((_, res) => {
   res.status(404).json({ message: 'Not found' })
@@ -24,7 +27,7 @@ app.use((_, res) => {
 
 
 // якщо next(error) код дійде в цю ф-ю - обробник помилок
-app.use((err, req, res, next) => {
+app.use((err, _, res, next) => {
   const { status = 500, message = "Server error" } = err;
   res.status(status).json({ message, })
 });

@@ -3,7 +3,7 @@ const Joi = require("joi");
 
 const { handleMongooseError } = require('../helpers');
 
-const contactShema = new Schema(
+const contactSchema = new Schema(
   {
     name: {
       type: String,
@@ -19,12 +19,16 @@ const contactShema = new Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
+    },
   },
   { versionKey: false, timestamps: true }
 );// щоб запис дата створ і онов
 
-contactShema.post("save", handleMongooseError);// помилка з вірним статусом 400
-const Contact = model("contact", contactShema);
+contactSchema.post("save", handleMongooseError);// помилка з вірним статусом 400
+const Contact = model("contact", contactSchema);
 
 const addSchema = Joi.object({
   name: Joi.string()
@@ -46,7 +50,7 @@ const addSchema = Joi.object({
 const updFavoriteSchema = Joi.object({
   favorite: Joi.boolean()
     .required()
-    .messages({"any.required": `missing field favorite`}),
+    .messages({"any.required": `missing field favorite`})
 });
 
 const schemas = {
