@@ -1,52 +1,88 @@
-Створи гілку 03-mongodb з гілки master.
+   Крок 1
+Підготовка інтеграції з nodemailer 
+   Крок 2
+     Створення ендпоінта для верифікації email
+Додати в модель User два поля verificationToken і verify. Значення поля verify рівне false означатиме, що його email ще не пройшов верифікацію
 
-Продовж створення REST API для роботи з колекцією контактів.
-
-Крок 1
-Створи аккаунт на MongoDB Atlas. Після чого в акаунті створи новий проект і налаштуй безкоштовний кластер. Під час налаштування кластера вибери провайдера і регіон як на скріншоті нижче. Якщо вибрати занадто віддалений регіон, швидкість відповіді сервера буде довше.
-
-atlas cluster setup
-Крок 2
-Встанови графічний редактор MongoDB Compass для зручної роботи з базою даних для MongoDB. Налаштуй підключення своєї хмарної бази даних до Compass. У MongoDB Atlas не забудь створити користувача з правами адміністратора.
-
+{
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, 'Verify token is required'],
+  },
+}
+створити ендпоінт GET [/users/verify/:verificationToken](# verification-request), де по параметру verificationToken ми будемо шукати користувача в моделі User
+якщо користувач з таким токеном не знайдений, необхідно повернути Помилку 'Not Found'
+якщо користувач знайдений - встановлюємо verificationToken в null, а поле verify ставимо рівним true в документі користувача і повертаємо Успішний відповідь
+Verification request
+GET /auth/verify/:verificationToken
+Verification user Not Found
+Status: 404 Not Found
+ResponseBody: {
+  message: 'User not found'
+}
+Verification success response
+Status: 200 OK
+ResponseBody: {
+  message: 'Verification successful',
+}
 Крок 3
-Через Compass створи базу даних db-contacts і в ній колекцію contacts. Візьми ссылка на json і за допомогою Compass наповни колекцію contacts (зроби імпорт) його вмістом.
+Додавання відправки email користувачу з посиланням для верифікації
+При створення користувача при реєстрації:
 
-json data
-Якщо ви все зробили правильно, дані повинні з'явитися у вашій базі в колекції contacts
-
-mongo data
+створити verificationToken для користувача і записати його в БД (для генерації токена використовуйте пакет uuid або nanoid)
+відправити email на пошту користувача і вказати посилання для верифікації email'а ( /users/verify/:verificationToken) в повідомленні
+Так само необхідно враховувати, що тепер логін користувача не дозволено, якщо не верифікувано email
 Крок 4
-Використовуй вихідний код домашньої работи #2 і заміни зберігання контактів з json-файлу на створену тобою базу даних.
+Додавання повторної відправки email користувачу з посиланням для верифікації
+Необхідно передбачити, варіант, що користувач може випадково видалити лист. Воно може не дійти з якоїсь причини до адресата. Наш сервіс відправки листів під час реєстрації видав помилку і т.д.
 
-Напиши код для створення підключення до MongoDB за допомогою Mongoose.
-При успішному підключенні виведи в консоль повідомлення "Database connection successful".
-Обов'язково обробив помилку підключення. Виведи в консоль повідомлення помилки і заверши процес використовуючи process.exit(1).
-У функціях обробки запитів заміни код CRUD-операцій над контактами з файлу, на Mongoose-методи для роботи з колекцією контактів в базі даних.
-Схема моделі для колекції contacts:
+@ POST /users/verify
+Отримує body в форматі {email}
+Якщо в body немає обов'язкового поля email, повертає json з ключем {"message":"missing required field email"} і статусом 400
+Якщо з body все добре, виконуємо повторну відправку листа з verificationToken на вказаний email, але тільки якщо користувач не верифікований
+Якщо користувач вже пройшов верифікацію відправити json з ключем {"message":"Verification has already been passed"} зі статусом 400 Bad Request
+Resending a email request
+POST /users/verify
+Content-Type: application/json
+RequestBody: {
+  "email": "example@example.com"
+}
+`` `
 
-  {
-    name: {
-      type: String,
-      required: [true, 'Set name for contact'],
-    },
-    email: {
-      type: String,
-    },
-    phone: {
-      type: String,
-    },
-    favorite: {
-      type: Boolean,
-      default: false,
-    },
-  }
-Крок 5
-У нас з'явилося в контактах додаткове поле статусу favorite, яке приймає логічне значення true або false. Воно відповідає за те, що в обраному чи ні знаходиться зазначений контакт. Потрібно реалізувати для оновлення статусу контакту новий роутер
+#### Resending a email validation error
 
-@ PATCH / api / contacts /: contactId / favorite
-Отримує параметр contactId
-Отримує body в json-форматі c оновленням поля favorite
-Якщо body немає, повертає json з ключем {"message": "missing field favorite"}і статусом 400
-Якщо з body все добре, викликає функцію updateStatusContact (contactId, body) (напиши її) для поновлення контакту в базі
-За результатом роботи функції повертає оновлений об'єкт контакту і статусом 200. В іншому випадку, повертає json з ключем " message ":" Not found " і статусом 404
+```shell
+Status: 400 Bad Request
+Content-Type: application/json
+ResponseBody: <Помилка від Joi або іншої бібліотеки валідації>
+Resending a email success response
+Status: 200 Ok
+Content-Type: application/json
+ResponseBody: {
+  "message": "Verification email sent"
+}
+Resend email for verified user
+Status: 400 Bad Request
+Content-Type: application/json
+ResponseBody: {
+  message: "Verification has already been passed"
+}
+Content-Type: application/json
+ResponseBody: {
+  "avatarURL": "тут буде посилання на зображення"
+}
+
+# Неуспішна відповідь
+Status: 401 Unauthorized
+Content-Type: application/json
+ResponseBody: {
+  "message": "Not authorized"
+}
+Створи папку tmp в корені проекту і зберігай в неї завантажену аватарку.
+Оброби аватарку пакетом jimp і постав для неї розміри 250 на 250
+Перенеси аватарку користувача з папки tmp в папку public/avatars і дай їй унікальне ім'я для конкретного користувача.
+Отриманий URL /avatars/<ім'я файлу з розширенням> та збережи в поле avatarURL користувача
